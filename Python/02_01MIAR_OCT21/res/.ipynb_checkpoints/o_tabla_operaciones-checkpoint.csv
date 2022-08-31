@@ -1,0 +1,8 @@
+Operación|Descripción
+a + b|suma a y b
+a - b|resta a menos b
+a / b|a dividido
+a // b|a dividido entre b (quitando decimales)
+a % b|devuelve el resto de la división a/b (modulus)
+a * b|a multiplicado por b
+a ** b|a elevado a b

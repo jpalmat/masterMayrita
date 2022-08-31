@@ -1,0 +1,227 @@
+<meta charset="utf-8">
+**01MIAR - Pip, Instalador de Paquetes**
+    <small>©2021 VIU - 01MIAR Python para la Inteligencia Artificial - Iván Fuertes</small>
+
+# Pip
+
+*Pip* es el gestor de paquetes de Python, esto significa que es una herramienta que permite instalar y gestionar librerías adicionales y dependencias que no se distribuyen como parte de la librería standard.
+
+La gestión de paquetes es tan importante, que *pip* se incluye en el instalador de Python desde la versión 3.4. El concepto de gestor de paquetes es habitual en otros lenguajes, *JavaScript* usa *npm*, *Ruby* usa *gem*, *.NET* usa *NuGet*,... En Python, *pip* es el gestor de paquetes standard.
+
+El instalador de Python ya instala *pip*, así que debería estar listo para usar desde el principio. Se puede verificar si está disponible ejecutando `pip` en la consola.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip --version
+pip 21.0.1 from ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_version]: Consulta de la versión de *pip*]
+
+## Instalar paquetes con *pip*
+
+Python se considera un lenguaje con "pilas incluidas", es decir, la librería standard incluye un conjunto extensivo de paquetes y módulos para ayudar a los desarrolladores con sus aplicaciones
+
+Al mismo tiempo, tiene una comunidad muy amplia y activa que contribuye con un número aún mayor de paquetes que pueden ayudar con las necesidades de desarrollo. Estos paquetes se publican en *Python Package Index*, también conocido como [PyPI](https://pypi.org/). Este sitio aloja una colección gigante de paquetes que incluyen frameworks de desarrollo, herramientas y librerías.
+
+Muchos de estos paquetes simplifican el desarrollo en Python ofreciendo interfaces a funcionalidad que ya existe en la librería standard.
+
+### Instalación básica de paquetes
+
+Se puede aprender acerca de los distintos comandos de *pip*, ejecutando `pip` con el argumento `help` desde la consola.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip help
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_help]: Consulta de la ayuda de *pip*]
+
+Para instalar un paquete hay que usar el comando `install`, por ejemplo para instalar el paquete [NumPy](https://pypi.org/project/numpy/).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip install numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_install]: Instalar la librería *NumPy*]
+
+Tras el comando `install` se pone el nombre del paquete que se quiere instalar, *pip* buscará dicho paquete en *PyPI*, calculará sus dependencias, y las instalará para asegurarse que el paquete funcionará.
+
+Si la versión de *pip* se encuentra desfasada, se pedirá la actualización de la misma, para ello hay que usar Python con la opción `-m`. Esta opción le dice a Python que debe lanzar un módulo como un ejecutable, esto es necesario puesto que para actualizar *pip*, la versión vieja debe ser desinstalada antes de instalar la nueva versión, y quitarla mientras se está ejecutando puede dar errores. Cuando se ejecuta *pip* como módulo, Python carga dicho módulo en memoria y permite que el paquete se elimine mientras se está usando.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> python -m pip install --upgrade pip
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_upgrade]: Actualizar *pip*]
+
+Se puede usar también el comando `list` para ver paquetes instalados en el entorno.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_list]: Ver paquetes instalados]
+
+El comando `install` siempre buscará la última versión del paquete y la instalará, también buscará por las dependencias listadas en el paquete e instalará también dichas dependencias.
+
+Se pueden visualizar los metadatos de un paquete con el comando `show`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip show pygame
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_show]: Ver metadatos de paquetes instalados]
+
+Una vez instalado el paquete, se puede usar como cualquier otro paquete standard, y hacer un `import` de la manera habitual, puesto que y a está instalado en el entorno y disponible para Python.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Python linenumbers
+import numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [import_numpy]: Importar un paquete instalado]
+
+## Usando ficheros de requisitos
+
+El comando `install` siempre instala la última versión publicada de un paquete, pero a veces, se necesitan instalar versiones específicas que se sabe que funcionan con el código que se está manejando.
+
+Se suele crear una especificación de las dependencias y versiones que se han usado durante el desarrollo y testeo de la aplicación, para que no hayan sorpresas cuando se use la aplicación en producción.
+
+Los ficheros de requisitos permiten especificar exactamente que paquetes y que versiones se deberían instalar. En *pip* existe el comando `freeze` que genera un fichero en un formato concreto con los paquetes instalados. Se puede usar este comando, redirigiendo la salida a un fichero para generar un `requirements.txt`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip freeze > requirements.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_freeze]: Generar fichero de requisitos]
+
+Este comando vuelca todos los paquetes y sus versiones a un fichero de texto, que se puede usar para instalar los requisitos exactos en otro sistema. La convención es nombrar a dicho fichero `requirements.txt`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+anyio==3.1.0
+argon2-cffi==20.1.0
+async-generator==1.10
+attrs==21.2.0
+....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_requirements]: Contenido del fichero de requisitos]
+
+Cuando se quiere replicar el entorno en otro sistema, se puede ejecutar el comando `install` de *pip* especificando el fichero de requisitos usando la opción `-r`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip install -r requirements.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_install_req]: Instalar paquetes desde fichero de requisitos]
+
+Se suele enviar este fichero al control de versiones y usarlo para crear exactamente el mismo entorno en otras máquinas.
+
+### Control fino sobre los requisitos
+
+El problema de fijar las versiones de los paquetes y sus dependencias es que los paquetes se suelen actualizar frecuentemente con arreglos de errores o fallos de seguridad, y probablemente sea interesante actualizarlos tan pronto como sean públicas.
+
+El fichero de requisitos permite especificar las versiones de las dependencias usando operadores lógicos que ofrecen algo de flexibilidad para asegurar que los paquetes están actualizados, pero aún definen las versiones básicas de un paquete.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+numpy>=1.21.3
+....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_requirements_fine]: Fichero de requisitos con versión mínima de NumPy]
+
+Se puede cambiar el operador lógico a `>=` para decirle a *pip* que se debe instalar una versión determinada o superior. Cuando se genera un nuevo entorno usando estos ficheros, *pip* busca la última versión que cumple los requisitos y la instala. Se pueden actualizar los requisitos en cualquier momento usando el comando `install` con la opción `upgrade`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip install --upgrade -r requirements.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [pip_upgrade_req]: Actualizar paquetes desde fichero de requisitos]
+
+En un mundo ideal, las versiones nuevas de los paquetes serían siempre compatibles hacía atrás y nunca introducirían nuevos bugs. Pero por desgracia, las nuevas versiones pueden introducir cambios que rompan la aplicación. El fichero de requisitos soporta una sintaxis adicional para determinar un rango de versiones de paquetes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+numpy>=1.21.3, < 2.0
+....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_requirements_fine]: Fichero de requisitos con versión de NumPy en un rango]
+
+De esta manera se está restringiendo la instalación de un paquete a un rango de versiones determinado, que se sabe de antemano que no rompen la funcionalidad de la aplicación.
+
+Para aprender más acerca del formato de los ficheros de requisitos se puede consultar la documentación de [pip](https://pip.pypa.io/en/stable/cli/pip_install/)
+
+### Dependencias de producción y desarrollo
+
+No todos los paquetes que se instalan durante el desarrollo de una aplicación van a acabar siendo dependencias de la aplicación. Hay muchos paquetes que son herramientas de desarrollo o librerías que no se necesitan en el entorno final de producción. Por ejemplo, un framework de testeo unitario como [pytest](https://docs.pytest.org/en/6.2.x/), se quiere instalar en las máquinas de desarrollo, pero no en las de producción.
+
+Se crea un segundo fichero de requisitos, `requirements_dev.txt` con las herramientas adicionales para el entorno de desarrollo.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+pytests>=4.2.0
+....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_requirements_dev]: Fichero de requisitos de desarrollo `requirements_dev.txt`]
+
+Entonces hay que usar *pip* para instalar ambos ficheros de requisitos, afortunadamente, *pip* permite especificar parametros adicionales dentro de un fichero de requisitos. Se puede modificar el fichero de requisitos de desarrollo `requirements_dev.txt` para instalar desde ahí también el fichero de requisitos de producción.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+-r requirements.txt
+pytests>=4.2.0
+....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_requirements_dev_prod]: Fichero de requisitos de desarrollo `requirements_dev.txt` llamando al de producción]
+
+Se usa la misma opción `-r` para instalar el fichero de requisitos de producción.
+
+### Congelando requisitos para producción
+
+Se han creado los ficheros de requisitos para producción y desarrollo y se han añadido al control de versiones, los ficheros usan especificadores de versiones flexibles para asegurase que se recogen los arreglos de bugs publicados por sus dependencias. También se prueba la aplcicación y se está listo para desplegar en producción. Probablemente sea buena idea asegurarse que las versiones de las dependencias desplegadas en producción sean exactamente las mismas que las usadas en los entornos de integración o build, donde todos los tests han pasado con éxito y la aplicación funciona.
+
+Los especificadores de versión no garantizan que las mismas versiones serán desplegadas en producción, así que se quieren congelar los requisitos de producción. Para ello, se crea un entorno virtual de producción y se instalan los requisitos usando un fichero `requirements.txt`, una vez instalados, se pueden congelar versiones específicas, volcando la salida de `freeze` a un fichero `requirements_lock.txt`, que se usa en producción, este fichero contendrá las versiones exactas y se puede usar para replicar el entorno.
+
+## Buscar paquetes
+
+Conforme avanza la experiencia del programador, se conocen un conjunto de paquetes que se usan de manera habitual en la mayoría de aplicaciones. En cambio, en ocasiones, se tendrá que resolver un problema distinto, y se buscará un paquete o herramienta distinto para ayudar en el desarrollo. Existe un comando `search` en *pip* que permite buscar en los paquetes publicados en *PyPI*.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip search numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [buscar_paquetes]: Buscar paquetes en *PyPI*]
+
+Pero la mayoría de las veces se buscan los paquetes directamente en la web de [PyPI](https://pypi.org/). Donde se tiene un buscador avanzado con filtrado de los resultados por los metadatos de las librerías. Muchos de estos paquetes tienen enlaces a sus propias webs o repositorios de código públicos donde conocer mejor sus capacidades. Otra opción es buscar directamente en Google u otros foros/blogs/artículos de programación.
+
+## Desinstalar paquetes con *pip*
+
+En ocasiones, se necesita desinstalar un paquete. Quizá se haya encontrado un paquete mejor que reemplace al original, o es algo que ya no se necesita más.
+
+Cuando se instalan los paquetes, también lo hacen sus dependencias, cuantos más paquetes se instalan, más probable es que varios paquetes tengan la misma dependencia. Antes de desinstalar un paquete es recomendable revisar estas dependencias con el comando `show`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip show numpy
+Name: numpy
+Version: 1.21.2
+Summary: NumPy is the fundamental package for array computing with Python.
+Home-page: https://www.numpy.org
+Author: Travis E. Oliphant et al.
+Author-email:
+License: BSD
+Location: c:\.virtualenvs\contents-tsn_ntbi\lib\site-packages
+Requires:
+Required-by: seaborn, scipy, pandas, matplotlib
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [show_numpy]: Mostrar información de *NumPy*]
+
+Los dos últimos campos muestran los paquetes que requiere este paquete y los que dependen de éste. Este paquete no tiene ninguna dependencia, pero de él dependen varios, así que habria que tener cuidado a la hora de desinstalarlo.
+
+Para desinstalar un paquete se usa el comando `uninstall`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip uninstall numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [uninstall_numpy]: Desinstalar *NumPy*]
+
+Esto desinstalará el paquete deseado, mostrará los ficheros que se van a eliminar y pedirá confirmación. Se le puede para como parámetro `-y` para que no realice esta pregunta. Se pueden especificar varios paquetes a desinstalar en una sola línea de comando.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip uninstall numpy pandas
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [uninstall_numpy_pandas]: Desinstalar *numPy* y *pandas*]
+
+Se pueden desinstalar todos los paquetes listados en un fichero de requisitos de una sola vez.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip uninstall -r -y requirements.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [uninstall_reqs]: Desinstalar a través de un fichero `requirements.txt` sin preguntar por confirmación]
+
+Es importante verificar las dependencias de los paquetes que se quieren desinstalar, probablemente se quieran desinstalar todas ellas, pero a veces, desinstalar un paquete que está siendo usado por otros romperá la aplicación.
+
+<link rel="stylesheet" href="res/md/viu.css">
+<style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'long'};</script>
+<!-- Markdeep: --><script src="res/md/markdeep.min.js?" charset="utf-8"></script>

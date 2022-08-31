@@ -1,0 +1,15 @@
+tutor orienta
+a partir de imagenes segmentar columna y en base determinar los angulos de cob, mediante metodos de deeplearning, se mide angulos y ver si la defor5macion en curvatura va mejorando
+
+me va a enviar 3 papers
+
+tres angulos de cob
+localizar y segmentar vertebras y en base a la inclinacion encontrar los angulos
+
+tomar apuntes de lo leido de papers
+
+grounf truth --> mascara de segmentacion, apartir de corrdenadas generar imagen binaria donde cada recuadro de vertebras este en blanco... active contours
+
+imagenes de 512x128 bueno para entrenar arquitectura de deeplearning
+
+reescalado de imagenes q no se  pierda info

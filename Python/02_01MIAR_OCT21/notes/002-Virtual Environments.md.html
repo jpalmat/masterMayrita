@@ -1,0 +1,377 @@
+<meta charset="utf-8">
+**01MIAR - 002 - Entornos Virtuales**
+    <small>©2021 VIU - 01MIAR Python para la Inteligencia Artificial - Iván Fuertes</small>
+
+# Virtual environments
+
+Python tiene un sistema propio de descargar, almacenar, resolver y usar paquetes o módulos. Pese a la mayoría de sus ventajas, conlleva algunas decisiones que pueden llevar a ciertos problemas, particularmente en el cómo y dónde se almacenan dichos paquetes. Hay varios sitios donde esos paquetes pueden ser instalados en el sistema, usando *pip* como método habitual de instalación de paquetes, este directorio suele ser el apuntado por `site.getsitepackages`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Python linenumbers
+>>> import site
+>>> site.getsitepackages()
+['C:\\Program Files\\Python39', 'C:\\Program Files\\Python39\\lib\\site-packages']
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_sites]: Directorios de instalación de paquetes]
+
+Esto significa que, por defecto, cualquier proyecto en el sistema usará esos mismos directorios para almacenar y conseguir los paquetes o librerías de terceros. A primera vista, puede no parecer un gran problema, sobre todo para los paquetes de sistema, pero para el resto de librerías puede convertirse en un dolor de cabeza rápidamente.
+
+Se tienen dos proyectos, A y B, ambos con una dependencia a la misma librería. El problema surge cuando se empieza a pedir diferentes versiones de la librería, quizás el proyecto A necesite la versión 1.3.2, mientras que el proyecto B puede necesitar la versión 2.1.0. Esto es un problema porque Python no puede diferenciar entre versiones en el directorio donde se almacenan los paquetes, con lo cual, ambas versiones acabarían con el mismo nombre en el mismo directorio. Y puesto que los proyectos se almacenan de acuerdo a sólo su nombre, no hay diferencia entre ellos. De esta manera, los proyectos A y B tendrían que usar la misma versión, lo cual normalmente es inaceptable, o bien, andar instalando versiones de la librería distintas cada vez que hubiera que usar el proyecto A o el B, lo cual es peor incluso. La solución es usar entornos virtuales.
+
+El objetivo principal de un entorno virtual es crear un entorno aislado para los proyectos de Python. Esto significa que cada proyecto puede tener sus propias dependencias, sin importar las dependencias que tengan otros proyectos. Habría que crear un entorno virtual separado para el proyecto A y el B, y cada entorno podría depender de su propia versión de la librería C, de manera totalmente independiente. No hay límite de entornos que se pueden tener, puesto que son simplemente directorios con unos cuantos scripts, y se gestionan fácilmente usando *virtualenv*.
+
+## Crear entornos virtuales
+
+Hay varias maneras de usar los entornos virtuales, puesto que en las últimas versiones de Python ya es algo integrado en el lenguaje. Sin embargo, si se quiere fijar una versión de Python para cada entorno virtual, la única manera de hacerlo en todas las plataformas es mediante la herramienta *virtualenv*.
+
+Para instalar *virtualenv* hay que hacerlo a través del instalador de paquetes de Python *pip*, desde la línea de comandos.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip install virtualenv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_virtualenv]: Instalar virtualenv con pip]
+
+Se suele usar la convención de crear los entornos virtuales dentro de cada proyecto en el directorio raíz de los mismos, en una carpeta que se suele llamar `.venv`. De tal forma que dentro de cada proyecto ya van contenidos tanto la versión de Python requerida como los paquetes de los que se dependen.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> mkdir Project
+E:\Dev\VIU\MIAR> cd Project
+E:\Dev\VIU\MIAR> virtualenv --python=/usr/bin/python3.9 .venv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [create_virtualenv]: Crear entorno virtual con la versión 3.9 de Python]
+
+Se puede observar que primero se crea y accede al directorio del proyecto donde se quiere crear el entorno virtual, y luego se crea el mismo. El primer parámetro indica la versión de Python a usar, en este caso la 3.9 que ha sido previamente instalada en la ruta que se muestra (`/usr/bin/python3.9`), se puede omitir este parámetro si se quiere usar la versión actual del sistema. El segundo parámetro es el nombre de la carpeta donde se quiere crear el entorno virtual. Esto deja una estructura de carpetas similar a la siguiente.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bash
+Project
+└── .venv
+    ├── bin
+    │   ├── activate
+    │   ├── activate.csh
+    │   ├── activate.fish
+    │   ├── activate.ps1
+    │   ├── activate_this.py
+    │   ├── activate.xsh
+    │   ├── pip
+    │   ├── pip3
+    │   ├── pip-3.9
+    │   ├── pip3.9
+    │   ├── python -> /usr/bin/python3.9
+    │   ├── python3 -> python
+    │   ├── python3.9 -> python
+    │   ├── wheel
+    │   ├── wheel3
+    │   ├── wheel-3.9
+    │   └── wheel3.9
+    ├── .gitignore
+    ├── lib
+    │   └── python3.9
+    └── pyvenv.cfg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [virtualenv_folders]: Estructura de carpetas de un entorno virtual]
+
+También se puede generar un entorno virtual usando el propio Python, pero en este caso sin especificar una versión distinta de Python y usar la misma que tiene el sistema instalado.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bash linenumbers
+E:\Dev\VIU\MIAR> mkdir Project
+E:\Dev\VIU\MIAR> cd Project
+E:\Dev\VIU\MIAR> python -m venv .venv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [create_virtualenv2]: Crear entorno virtual desde Python]
+
+### Usar entornos virtuales en Posix
+
+Una vez creado el entorno virtual para un proyecto, llega el momento de activarlo cuando se va a empezar a trabajar con dicho proyecto. En la carpeta *bin* dentro del entorno virtual hay una serie de scripts para activar y desactivar dicho entorno.
+
+A partir de aquí siempre se asumirá que se tiene el entorno virtual activado para trabajar con el proyecto.
+
+Para usar los paquetes de este proyecto en aislamiento, es decir, activar este entorno virtual, hay que llamar al script correspondiente.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> source .venv/bin/activate
+(.venv) E:\Dev\VIU\MIAR>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [activate_virtualenv]: Activar entorno virtual]
+
+ Al hacerlo correctamente el prompt de la terminal cambia, y mantiene el prefijo con el nombre del entorno activado, para mostrar que se está haciendo uso de él. A partir de ese momento, Python usará los paquetes y ajustes de este entorno.
+
+ Cuando se acaba de usar dicho entorno, hay que desactivarlo para devolver todo a la normalidad.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+(.venv)E:\Dev\VIU\MIAR> deactivate
+E:\Dev\VIU\MIAR>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [deactivate_virtualenv]: Desactivar entorno virtual]
+
+### Usar entornos virtuales en Windows
+
+Para activar un entorno virtual en Windows hay que llamar al archivo `.bat` diseñado para eso. Desactivarlo se hace de manera idéntica a Posix.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> .\.venv\Scripts\activate.bat
+(.venv)E:\Dev\VIU\MIAR>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [activate_virtualenv_win]: Activar entorno virtual en Windows]
+
+## Cómo funciona
+
+Saber como funciona por debajo este sistema puede resultar de cierta relevancia en determinados momentos. Cuando no hay ningún entorno virtual activado el ejecutable de Python que se usa es el del sistema.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> which python3
+/usr/bin/python3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [which_python]: Localización de Python en Sistema]
+
+Activando el entorno virtual el ejecutable de Python que se usa es el del propio entorno.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> source .venv/bin/activate
+(.venv)E:\Dev\VIU\MIAR> which python3
+/home/user/Documents/projects/Project/.venv/bin/python3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [which_python2]: Localización de Python en entorno virtual]
+
+Esto sucede porque en un entorno activo la variable de sistema `PATH` se modifica para apuntar a la instalación correcta en cada caso.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+E:\Dev\VIU\MIAR> source .venv/bin/activate
+(.venv)E:\Dev\VIU\MIAR> echo $PATH
+/home/user/Documents/projects/Project/.venv/bin/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [path]: Variable `PATH` antes y después de activar un entorno]
+
+Se puede observar que con el entorno activado se ha añadido la carpeta del entorno al `PATH` al principio. Esto significa que es el primer sitio donde el sistema buscará el ejecutable al lanzarlo desde la linea de comandos. Y entonces la terminal usa la instancia de Python del entorno en lugar de la del sistema.
+
+Para que todo esto funcione también con los paquetes hay que conocer como funciona Python. Cuando se arranca Python, busca en el directorio donde está alojado el binario que se está ejecutando. En un entorno virtual, es una copia local o un enlace simbólico al del sistema. Entonces coloca las direcciones de `sys.prefix` y `sys.exec.prefix` basándose en ese directorio. Y estas rutas son las que se usan para localizar el directorio de los paquetes buscando por el path relativo a ellas.
+
+# *PipEnv*
+
+*Pipenv* es una herramienta de gestión de paquetes que soluciona muchos de los problemas habituales asociados al uso habitual de *pip*, *virtualenv* y el fichero *requirements.txt*, así como consolida y simplifica el proceso de desarrollo en una sola herramienta de línea de comandos.
+
+Primero hay que instalar *PipEnv* mediante *pip*.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pip install pipenv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_pipenv]: Instalación de *PipEnv*]
+
+Una vez hecho esto, *pipenv* puede funcionar como un reemplazo del propio *pip*. Introduce dos nuevos ficheros `Pipfile` (que reemplazaría a `requirements.txt`) y `Pipfile.lock` (que permite contrucciones deterministas).
+
+*PipEnv* usa *pip* y *virtualenv* por debajo, pero simplifica su uso con un interface único de línea de comandos.
+
+Estando en el directorio raíz del proyecto donde se quiere crear el entorno virtual, se genera un `shell` para aislar el desarrollo de esta aplicación.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pipenv shell
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [spawn_shell]: Generar un `shell`]
+
+Esto creará un entorno virtual si no existe ninguno en esa localización. *PipEnv* crea todos los entornos virtuales en una localización por defecto en la carpeta del usuario.
+
+Se puede forzar la creación de un entorno con una versión determinada de Python, usando la opción `--python`. En caso contrario, usará la versión que encuentre por defecto.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR> pipenv --python 3.9
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [entorno_python3.9]: Crear un entorno virtual con la versión 3.9]
+
+Una vez activado el entorno virtual el prompt cambia para mostrar el nombre del entorno en uso en ese momento. Ahora se puede instalar cualquier paquete de terceros que se necesite, incluso se puede especificar una versión concreta, si se deja en blanco la versión se instalará la más reciente.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv install numpy==1.21.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_numpy]: Instalar *NumPy* en el entorno virtual]
+
+Se crean dos ficheros, `Pipfile` y `Pipfile.lock`.
+
+Se puede incluso instalar algún paquete directamente desde un sistema de control de versiones.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv install -e git+https://github.com/requests/requests.git#egg=requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_git]: Instalar un paquete desde *Git*]
+
+El argumento `-e` hace que la instalación sea editable, y así se pueda modificar durante el desarrollo.
+
+Para gestionar el uso de paquetes de desarrollo, es decir, aquellos que solo se necesitan en entornos en los que los programadores trabajan sobre la aplicación, y no se necesita que estén presentes en el entorno de producción, se puede usar la opción `--dev` al instalar el paquete.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv install pytest --dev
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_pytest]: Instalar *PyTest* en el entorno virtual en desarrollo]
+
+Con este argumento se pone la dependencia en un sitio especial dentro del fichero `Pipfile`, concretamente bajo la sección `[dev-packages]`. Estos paquetes de desarrollo solo se instalarán si se especifica el argumento `--dev` al hacer `install`. En contraposición a como lo hacia *pip*, que necesitaba dos ficheros de requisitos para esto, aquí se usa el mismo fichero `Pipfile` en diferentes secciones.
+
+Una vez se tiene todo funcionando en el entorno de desarrollo local y se está listo para llevarlo a producción, se bloquea el entorno con `lock` para asegurarse de tener exactamente el mismo en producción.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv lock
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [lock]: Bloquear entorno virtual]
+
+Esto creará/actualizará el fichero `Pipfile.lock`, que nunca se debería editar a mano. Ahora, una vez se tiene el código de la aplicación y el fichero `Pipfile.lock` en el entorno de producción, se debería instalar el último entorno grabado con éxito.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv install --ignore-pipfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_lock]: Instalar entorno virtual desde fichero `Pipfile.lock`]
+
+Esto le dice a *PipEnv* que ignore el fichero `Pipfile` para la instalación y use lo que estén en `Pipfile.lock`. Con esto creará exactamente el mismo entorno que se tenía cuando se ejecutó el `lock`, con todas sus subdependencias.
+
+El fichero `lock` permite construcciones de las aplicaciones deterministas, tomando una fotografía de todas las versiones de los paquetes en un entorno.
+
+Si algún otro programador quiere realizar modificaciones en el código de la aplicación, tendría que conseguir el código, incluido el fichero `Pipfile`, y usar `install`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv install --dev
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [install_dev]: Instalar entorno virtual para desarrollo]
+
+Esto instalará todas las dependencias que se necesitan para desarrollo desde el fichero `Pipfile`, lo que incluye las dependencias normales junto con aquellas que se especificaron con el parámetro `--dev` al instalarlas.
+
+Cuando una versión exacta de un paquete no está especificada en el fichero `Pipfile`, el comando `install` da la oportunidad a las dependencias (y subdependencias) a actualizar sus versiones. Y esto soluciona muchos de los problemas de *pip*.
+
+## Resolución de dependencias de *PipEnv*
+
+*PipEnv* intentará instalar todas las subdependencias que satisfagan todos los requisitos de las dependencias principales. Sin embargo, pueden surgir conflictos con algunas dependencias, por ejemplo, el paquete A necesita el paquete C con la versión mayor o igual a 1.0, pero el paquete B necesita el paquete C con la versión inferior a la 1.0. En ese caso *PipEnv* no será capaz de crear un fichero `Pipfile.lock` y mostrará un error.
+
+Se puede visualizar un grafo de dependencias para intentar entender las dependencias de primer nivel y sus respectivas subdependencias.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv graph
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [graph]: Grafo de dependencias]
+
+Esto imprimirá una estructura de tipo árbol mostrando todas las dependencias. Se puede invertir el árbol para mostrar las subdependencias con los padres que las requieren.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv graph --reverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [graph_reverse]: Grafo de dependencias inverso]
+
+Esta visión es más útil cuando se están buscando subdependencias conflictivas.
+
+## El fichero `Pipfile`
+
+Este fichero intenta reemplazar al fichero `requirements.txt` de *pip*. La sintaxis para el fichero `Pipfile` es [TOML](https://github.com/toml-lang/toml). El fichero está separado en secciones, `[dev-packages]` para los paquetes de desarrollo, `[packages]` para los paquetes requeridos y `[requires]` para otros requisitos como una versión específica de Python.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Python linenumbers
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+jupyter = "*"
+jupyterlab = "*"
+pygame = "==2.0.1"
+
+[dev-packages]
+pytest = "==6.2.4"
+
+[requires]
+python_version = "3.9"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_pipfile]: Fichero `Pipfile`]
+
+No se debería tener ninguna subdependencia en este fichero, solo deberían incluirse aquellos paquetes que se importen y usen directamente, es decir las dependencias de primer nivel.
+
+## El fichero `Pipfile.lock`
+
+Este fichero es el que permite la construcción determinista, especificando los requisitos exactos para reproducir un entorno. Contiene las versiones exactas para los paquetes y sus hashes para una verificación más segura. La notación del fichero es *JSON*.
+
+Se especifica la versión exacta para cada dependencia, e incluso para cada subdependencia, que también aparecen en este fichero. Nunca se debería tocar este fichero a mano, se debe generar con el comando `lock`.
+
+## Otras características
+
+Se puede ejecutar un comando en el entorno virtual sin necesidad de lanzar un *shell*.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv run ls
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [lanzar_comando]: Lanzar un comando desde *pipenv*]
+
+Si se necesitan verificar vulnerabilidades [PEP508](https://www.python.org/dev/peps/pep-0508/)en el entorno se puede lanzar el comando `check`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-AP-ZLk-gLoU) λ pipenv check
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [check]: Verificar vulnerabilidades]
+
+Cuando un paquete no se necesita se puede desinstalar.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-AP-ZLk-gLoU) λ pipenv uninstall numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [uninstall]: Desinstalar un paquete]
+
+E incluso se pueden desinstalar todos los paquetes y dejar el entorno limpio, usando el parámetro `--all`, y con `--all-dev` desinstalar todos los paquetes de desarrollo.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv uninstall --all
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [uninstall_all]: Desinstalar todos los paquetes]
+
+Soporta la carga automática de variables de entorno a través de un fichero `.env` que exista en el directorio raíz del entorno. De esta manera, cuando se lanza `pipenv shell` para abrir el entorno virtual, carga las variables de entorno desde el fichero.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Python linenumbers
+HOME_PATH_DIRECTORY=/usr/local/my_project
+MAX_FILES=200
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [fichero_env]: Fichero `.env` con variables de entorno]
+
+Se le puede preguntar donde está guardado el entorno virtual con el paramétro `--venv`.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv --venv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [location]: Localización del entorno virtual]
+
+O donde está situado el directorio raíz del proyecto.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+E:\Dev\VIU\MIAR>
+(01MIAR-ZLk-gLoU) λ pipenv --where
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [location_project]: Localización del proyecto]
+
+# Distribución de paquetes
+
+La forma habitual de distribuir paquetes en Python es a través de `setuptools`, es una librería que viene incluida en el lenguaje. Para realizar la instalación se necesita un fichero `setup.py`, que contenga información acerca del paquete a instalar. Se puede consultar más información acerca del formato y contenido de dicho fichero [aquí](https://docs.hektorprofe.net/python/distribucion/setuptools/).
+
+El flujo de trabajo recomendado para distribuir un paquete es:
+
+- Crear un fichero `setup.py` en la raíz del proyecto donde se especifican los detalles del mismo
+- En dicho fichero, en la sección `install_requires`, incluir los paquetes que se necesitan para su funcionamiento
+- Opcionalmente instalar todos los paquetes de desarrollo necesarios dentro del entorno virtual, creando un fichero `Pipfile`, con los requisitos concretos del paquete
+- Instalar el paquete con los requisitos descritos en `setup.py` usando *PipEnv*. Se usa `pipenv install -e .` para ello, y en el fichero `Pipfile` aparecerá una línea donde se describe la instalación del propio paquete
+- Se crean todos los detalles para crear un entorno reproducible usando `pipenv lock`, que genera un fichero `Pipfile.lock`
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bash
+[packages]
+my_project = {editable = true, path = "."}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Listing [Pipfile_line]: Proyecto propio instalado en `Pipfile`]
+
+Se suelen poner los requisitos mínimos en el fichero `setup.py` en lugar de hacerlo directamente con `pipenv install`. Entonce se usa `pipenv install -e .` para instalar el paquete como editable. Esto se trae todos los requisitos del fichero `setup.py` dentro del entorno, y luego se puede usar un `pipenv lock` para obtener un entorno reproducible.
+
+Si no se necesita distribuir el código como un paquete, solo sería necesario el uso de los ficheros `Pipfile` y `Pipfile.lock` de la manera descrita anteriormente.
+
+<link rel="stylesheet" href="res/md/viu.css">
+<style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'long'};</script>
+<!-- Markdeep: --><script src="res/md/markdeep.min.js?" charset="utf-8"></script>
